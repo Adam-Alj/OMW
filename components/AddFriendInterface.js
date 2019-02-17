@@ -61,7 +61,7 @@ export default class AddFriendInterface extends Component{
             (curLocation) => {
               let location = curLocation.coords.latitude + ',' + curLocation.coords.longitude;
               //console.log(location)
-              fetch('https://api.opencagedata.com/geocode/v1/json?q=' + encodeURI(this.state.address) + '&key=1928eb92623a4d24974fc4d9c389ae81&pretty=1&no_annotations=1&proximity=' + location).then(
+              fetch('https://api.opencagedata.com/geocode/v1/json?q=' + encodeURI(this.state.address) + '&key= YOUR KEY HERE &pretty=1&no_annotations=1&proximity=' + location).then(
                 (response) => {
                     let result = JSON.parse(response._bodyInit);
                     //console.log(result);
