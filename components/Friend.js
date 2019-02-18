@@ -19,7 +19,7 @@ export default class Friend extends Component{
   render(){
     return(
         <View>
-            <TouchableOpacity style={FriendStyles.wrapperStyle} onPress={()=>this.props.sendState(this.state)} onLongPress={()=>{this.props.deleteFlag(this.state)}} delayLongPress={1800}>
+            <TouchableOpacity style={FriendStyles.wrapperStyle} onPress={()=>this.props.sendState(this.state)} onLongPress={()=>{this.props.deleteFlag(this.state)}} delayLongPress={500}>
                 <View style={FriendStyles.box1}>
                     <Text style={FriendStyles.nameText}>
                         {this.props.friendName}
