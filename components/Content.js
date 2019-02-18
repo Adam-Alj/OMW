@@ -2,15 +2,16 @@ import React, {Component} from 'react';
 import {AppRegistry, AsyncStorage, ScrollView, BackHandler, Alert} from 'react-native';
 
 
-import {getLocalData} from './utils/helpers';
+import {getLocalData, getStateData} from './utils/helpers';
 
 import FriendContainer from './FriendContainer';
 import AddFriend from './AddFriend';
 import AddFriendInterface from './AddFriendInterface';
 import Navigating from './Navigating';
+import BackupNavPage from './BackupNavPage';
 
 export default class Content extends Component{
-
+  
   constructor(props) {
     super(props);
     // page 1 = main page
@@ -30,6 +31,14 @@ export default class Content extends Component{
       this.setState({ friends: [], loading: false });
     } else {
       this.setState({ friends: data, loading: false });
+    }
+  }
+
+  updateState = async () =>{
+    let data = await getStateData();
+    
+    if(data.navigating && !data.cleanExit){
+      this.setState({page: 4});
     }
   }
 
@@ -53,15 +62,17 @@ export default class Content extends Component{
 
   openNavigation(childState){
     this.setState({callingChildState: childState, page: 3});
+    AsyncStorage.setItem('stateData', JSON.stringify({navigating: true, cleanExit: false}));
   }
 
   // Handles loading/initialization of stored Friend data
-  componentDidMount = async () => {
+  componentDidMount(){
 
     // clear for debug
     //AsyncStorage.clear();
     
-    await this.updateFriends().then(()=>console.log(this.state.friends));
+    this.updateFriends();
+    this.updateState().then(()=>console.log(this.state));
 
     BackHandler.addEventListener('hardwareBackPress',
       () => {
@@ -99,9 +110,13 @@ export default class Content extends Component{
       return(
         <AddFriendInterface pressFunc = {() => this.navToHome()}/>
       );
-    } else {
+    } else if(this.state.page == 3){
       return(
         <Navigating info={this.state.callingChildState} pressFunc = {() => this.navToHome()}/>
+      );
+    } else {
+      return(
+        <BackupNavPage />
       );
     }
   }

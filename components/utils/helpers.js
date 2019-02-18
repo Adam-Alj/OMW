@@ -9,6 +9,15 @@ export async function getLocalData(){
     }
 }
 
+export async function getStateData(){
+  try {
+      let stateData = await AsyncStorage.getItem('stateData');
+      return (stateData = stateData == null ? null : JSON.parse(stateData));
+  } catch (error) {
+      console.log(error);
+  }
+}
+
 export async function requestSMSPermission() {
     try {
       const granted = await PermissionsAndroid.request(

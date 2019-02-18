@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {AppRegistry, Text, View, StyleSheet, TouchableHighlight, BackHandler} from 'react-native';
+import {AppRegistry, Text, View, StyleSheet, TouchableHighlight, BackHandler, AsyncStorage} from 'react-native';
 
 import SendSMS from 'react-native-sms-x';
 import BackgroundTimer from 'react-native-background-timer';
@@ -40,7 +40,6 @@ export default class Navigating extends Component{
     SendSMS.send(123, this.state.phone, "I'm on my way!", (msg)=>{});
 
     this.setState({soonMessageSent: false, hereMessageSent: false});
-
     const interval = BackgroundTimer.setInterval(
       ()=>{
         try {
@@ -48,13 +47,13 @@ export default class Navigating extends Component{
             (y) => {
               let distance = this.calculateDistance(y.coords.latitude, y.coords.longitude, this.state.lat, this.state.long);
               console.log('tic');
-              if(!this.state.soonMessageSent && distance <= 0.35){
+              if(!this.state.soonMessageSent && distance <= 0.4){
                 this.setState({soonMessageSent: true});
-                SendSMS.send(123, this.state.phone, "I'll be here soon!", (msg)=>{ console.log(msg) });
+                SendSMS.send(123, this.state.phone, "I'll be there soon.", (msg)=>{ console.log(msg) });
               }
               if(!this.state.hereMessageSent && distance <= 0.1){
                 this.setState({hereMessageSent: true});
-                SendSMS.send(123, this.state.phone, "I'm outside!", (msg)=>{ this.terminateApp(); });
+                SendSMS.send(123, this.state.phone, "I'm here!", (msg)=>{ this.terminateApp(); });
               }
             },
             (err) => console.log(err),
@@ -69,12 +68,15 @@ export default class Navigating extends Component{
   }
 
   terminateApp(){
-    BackgroundTimer.clearInterval(this.state.intervalTimer);
-    this.props.pressFunc();
-    BackHandler.exitApp();
+    AsyncStorage.setItem('stateData', JSON.stringify({navigating: false, cleanExit: true})).then( () => {
+      BackgroundTimer.clearInterval(this.state.intervalTimer);
+      this.props.pressFunc();
+      BackHandler.exitApp();
+    });
   }
 
   cancelNavigating = () => {
+    AsyncStorage.setItem('stateData', JSON.stringify({navigating: false, cleanExit: true}));
     BackgroundTimer.clearInterval(this.state.intervalTimer);
     this.props.pressFunc();
   }
