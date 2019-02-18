@@ -38,21 +38,22 @@ export default class Navigating extends Component{
 
   startNavigating(){
     SendSMS.send(123, this.state.phone, "I'm on my way!", (msg)=>{});
+
+    this.setState({soonMessageSent: false, hereMessageSent: false});
+
     const interval = BackgroundTimer.setInterval(
       ()=>{
         try {
           navigator.geolocation.getCurrentPosition(
             (y) => {
-              let soonMessageSent = false;
-              let hereMessageSent = false;
               let distance = this.calculateDistance(y.coords.latitude, y.coords.longitude, this.state.lat, this.state.long);
               console.log('tic');
-              if(!soonMessageSent && distance <= 0.35){
-                soonMessageSent = true;
+              if(!this.state.soonMessageSent && distance <= 0.35){
+                this.setState({soonMessageSent: true});
                 SendSMS.send(123, this.state.phone, "I'll be here soon!", (msg)=>{ console.log(msg) });
               }
-              if(!hereMessageSent && distance <= 0.1){
-                hereMessageSent = true;
+              if(!this.state.hereMessageSent && distance <= 0.1){
+                this.setState({hereMessageSent: true});
                 SendSMS.send(123, this.state.phone, "I'm outside!", (msg)=>{ this.terminateApp(); });
               }
             },
