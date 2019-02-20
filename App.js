@@ -41,6 +41,10 @@ export default class App extends Component {
     });
   }
 
+  componentWillUnmount(){
+    console.log('APP UNMOUNTING!!!!!!!!!!!!!!!!');
+  }
+
   render() {
     if (this.state.initializing) {
       return (

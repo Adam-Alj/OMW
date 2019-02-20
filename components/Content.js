@@ -35,11 +35,13 @@ export default class Content extends Component{
   }
 
   updateState = async () =>{
-    let data = await getStateData();
-    
-    if(data.navigating && !data.cleanExit){
-      this.setState({page: 4});
-    }
+    getStateData().then((x)=> {
+      if(x != null){
+        if(x.navigating && !x.cleanExit){
+          this.setState({page: 4});
+        }
+      }
+    });
   }
 
   deleteFriend(retval){
@@ -67,7 +69,6 @@ export default class Content extends Component{
 
   // Handles loading/initialization of stored Friend data
   componentDidMount(){
-
     // clear for debug
     //AsyncStorage.clear();
     

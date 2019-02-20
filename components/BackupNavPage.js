@@ -18,9 +18,6 @@ export default class Navigating extends Component{
         <Text style={styles.textBig}>
             We can do this in the background. Safe travels!
         </Text>
-        <Text style={styles.textBig}>
-            We can do this in the background. Safe travels!
-        </Text>
         <TouchableHighlight
         style={[GeneralStyles.buttonWrapperStyle, {marginTop: 70}]}
         underlayColor='rgba(0,0,0,0.1)'

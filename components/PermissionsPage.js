@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {AppRegistry, Text, View, TouchableHighlight, StyleSheet} from 'react-native';
+import {AppRegistry, Text, View, TouchableHighlight, StyleSheet, Linking} from 'react-native';
 
 import {Fonts} from './utils/Fonts';
 import {GeneralStyles} from './utils/styles';
@@ -26,6 +26,10 @@ export default class PermissionsPage extends Component{
           <Text style={styles.textSmall}>
             We need to keep track of your location while you're on your way to pick up a friend, so that 
             we can let them know exactly when to come outside.
+          </Text>
+          <Text style={styles.privacyPolicy}
+          onPress={() => Linking.openURL('http://getomw.org/privacy').then(()=>{})}>
+            Read our privacy policy.
           </Text>
         </View>
         <TouchableHighlight
@@ -60,6 +64,12 @@ const styles = StyleSheet.create({
   },
   textSmall: {
     fontFamily: Fonts.BarlowMed
+  },
+  privacyPolicy: {
+    marginTop: 50,
+    fontFamily: Fonts.BarlowMed,
+    textDecorationLine: 'underline',
+    fontSize: 17
   }
 });
 

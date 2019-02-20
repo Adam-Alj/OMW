@@ -17,7 +17,8 @@ export default class Navigating extends Component{
       long: props.info.longitude,
       name: props.info.name,
       address: props.info.address,
-      phone: props.info.phone
+      phone: props.info.phone,
+      countDownText: 8
     }
   }
 
@@ -37,6 +38,55 @@ export default class Navigating extends Component{
   }
 
   startNavigating(){
+    const navTimeout = BackgroundTimer.setTimeout( ()=>{
+
+        SendSMS.send(123, this.state.phone, "I'm on my way!", (msg)=>{});
+
+        this.setState({soonMessageSent: false, hereMessageSent: false});
+        const interval = BackgroundTimer.setInterval(
+        ()=>{
+          try {
+            navigator.geolocation.getCurrentPosition(
+              (y) => {
+                let distance = this.calculateDistance(y.coords.latitude, y.coords.longitude, this.state.lat, this.state.long);
+                //console.log('tic from actual navigation');
+                if(!this.state.soonMessageSent && distance <= 0.65){
+                  this.setState({soonMessageSent: true});
+                  SendSMS.send(123, this.state.phone, "I'll be there soon.", (msg)=>{ console.log(msg) });
+                }
+                if(!this.state.hereMessageSent && distance <= 0.075){
+                  this.setState({hereMessageSent: true});
+                  SendSMS.send(123, this.state.phone, "I'm here!", (msg)=>{ this.terminateApp(); });
+                }
+              },
+              (err) => console.log(err),
+              { enableHighAccuracy: true, timeout: 60000, maximumAge: 2000}
+            );
+          } catch (err) {
+            console.warn(err);
+          }
+        }, 2000
+      );
+      this.setState({intervalTimer: interval});
+      //console.log(this.state);
+    }, 8000
+    );
+    let x = 8;
+    const countDownTimer = BackgroundTimer.setInterval(()=>{
+      if(x >= 1){
+        x--;
+        this.setState({countDownText: x});
+      } else {
+        this.setState({countDownText: "On your way..."});
+        BackgroundTimer.clearInterval(this.state.countDownTimer);
+      }
+    }, 1000);
+
+    this.setState({countDownTimer: countDownTimer, navTimeout: navTimeout});
+
+    // gotta remove navTimeout / countDownTimer / interval
+
+    /*
     SendSMS.send(123, this.state.phone, "I'm on my way!", (msg)=>{});
 
     this.setState({soonMessageSent: false, hereMessageSent: false});
@@ -46,12 +96,12 @@ export default class Navigating extends Component{
           navigator.geolocation.getCurrentPosition(
             (y) => {
               let distance = this.calculateDistance(y.coords.latitude, y.coords.longitude, this.state.lat, this.state.long);
-              console.log('tic');
-              if(!this.state.soonMessageSent && distance <= 0.4){
+              console.log('tic from actual navigation');
+              if(!this.state.soonMessageSent && distance <= 0.65){
                 this.setState({soonMessageSent: true});
                 SendSMS.send(123, this.state.phone, "I'll be there soon.", (msg)=>{ console.log(msg) });
               }
-              if(!this.state.hereMessageSent && distance <= 0.1){
+              if(!this.state.hereMessageSent && distance <= 0.075){
                 this.setState({hereMessageSent: true});
                 SendSMS.send(123, this.state.phone, "I'm here!", (msg)=>{ this.terminateApp(); });
               }
@@ -65,11 +115,14 @@ export default class Navigating extends Component{
       }, 2000
     );
     this.setState({intervalTimer: interval});
+    */
   }
 
   terminateApp(){
     AsyncStorage.setItem('stateData', JSON.stringify({navigating: false, cleanExit: true})).then( () => {
       BackgroundTimer.clearInterval(this.state.intervalTimer);
+      BackgroundTimer.clearInterval(this.state.countDownTimer);
+      BackgroundTimer.clearTimeout(this.state.navTimeout);
       this.props.pressFunc();
       BackHandler.exitApp();
     });
@@ -78,6 +131,8 @@ export default class Navigating extends Component{
   cancelNavigating = () => {
     AsyncStorage.setItem('stateData', JSON.stringify({navigating: false, cleanExit: true}));
     BackgroundTimer.clearInterval(this.state.intervalTimer);
+    BackgroundTimer.clearInterval(this.state.countDownTimer);
+    BackgroundTimer.clearTimeout(this.state.navTimeout);
     this.props.pressFunc();
   }
 
@@ -86,6 +141,12 @@ export default class Navigating extends Component{
       <View style={styles.wrapperStyle}>
         <Text style={styles.textBig}>
             We can do this in the background. Safe travels!
+        </Text>
+        <Text style={styles.textBig}>
+            Sending 'OMW' message and heading to {this.state.name} in:
+        </Text>
+        <Text style={styles.countDown}>
+            {this.state.countDownText}
         </Text>
         <TouchableHighlight
         style={[GeneralStyles.buttonWrapperStyle, {marginTop: 70}]}
@@ -111,7 +172,13 @@ const styles = StyleSheet.create({
     },
   textBig: {
     fontSize: 18,
-    fontFamily: Fonts.BarlowMed
+    fontFamily: Fonts.BarlowMed,
+    marginTop: 100
+  },
+  countDown: {
+    marginTop: 20,
+    marginBottom: 70,
+    fontSize: 50
   }
 });
 
